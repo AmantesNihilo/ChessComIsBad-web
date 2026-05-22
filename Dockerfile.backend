@@ -14,4 +14,4 @@ COPY assets assets
 
 RUN make -C engine clean && make -C engine LDLIBS=
 
-CMD ["python", "-m", "uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "-m", "uvicorn", "backend.app.main:app", "--host", "127.0.0.1", "--port", "8000"]
