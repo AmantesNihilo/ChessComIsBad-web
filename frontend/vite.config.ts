@@ -1,8 +1,16 @@
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
-// Use backend service name in Docker, localhost for local dev
-const apiTarget = process.env.VITE_API_TARGET || "http://127.0.0.1:8000";
+// Determine API target based on environment
+// In Docker: use backend service name
+// Local: use localhost
+const apiTarget = (() => {
+  if (process.env.VITE_API_TARGET) {
+    return process.env.VITE_API_TARGET;
+  }
+  // Default to backend service in Docker Compose network
+  return "http://backend:8000";
+})();
 
 export default defineConfig({
   plugins: [react()],
