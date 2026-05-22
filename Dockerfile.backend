@@ -7,13 +7,13 @@ ENV PYTHONPATH=/app
 RUN apt-get update && apt-get install -y \
     build-essential \
     make \
+    wget \
     && rm -rf /var/lib/apt/lists/*
 
-# Try to install stockfish from apt, or it will still be available via default_stockfish_path check
-RUN apt-get update && apt-get install -y stockfish \
-    && mkdir -p tools/stockfish \
-    && cp $(which stockfish) tools/stockfish/stockfish \
-    && rm -rf /var/lib/apt/lists/* || echo "Stockfish package not available, will use default path"
+# Download and setup Stockfish
+RUN mkdir -p tools/stockfish && \
+    wget -q https://github.com/official-stockfish/Stockfish/releases/download/sf17/stockfish-ubuntu-x86_64-avx2 -O tools/stockfish/stockfish && \
+    chmod +x tools/stockfish/stockfish || echo "Failed to download stockfish"
 
 COPY backend/requirements.txt backend/requirements.txt
 RUN pip install --no-cache-dir -r backend/requirements.txt
