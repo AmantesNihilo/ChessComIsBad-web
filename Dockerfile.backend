@@ -4,7 +4,7 @@ WORKDIR /app
 
 ENV PYTHONPATH=/app
 
-RUN apt-get update && apt-get install -y build-essential make \
+RUN apt-get update && apt-get install -y build-essential make stockfish \
     && rm -rf /var/lib/apt/lists/*
 
 COPY backend/requirements.txt backend/requirements.txt
