@@ -13,7 +13,9 @@ RUN apt-get update && apt-get install -y \
 # Download and setup Stockfish
 RUN mkdir -p tools/stockfish && \
     wget -q https://github.com/official-stockfish/Stockfish/releases/download/sf17/stockfish-ubuntu-x86_64-avx2 -O tools/stockfish/stockfish && \
-    chmod +x tools/stockfish/stockfish || echo "Failed to download stockfish"
+    ls -la tools/stockfish/ && \
+    chmod +x tools/stockfish/stockfish && \
+    ls -la tools/stockfish/stockfish
 
 COPY backend/requirements.txt backend/requirements.txt
 RUN pip install --no-cache-dir -r backend/requirements.txt
