@@ -12,6 +12,6 @@ COPY backend backend
 COPY engine engine
 COPY assets assets
 
-RUN make -C engine
+RUN make -C engine LDLIBS=
 
 CMD ["python", "-m", "uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
