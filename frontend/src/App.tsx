@@ -65,7 +65,7 @@ const screenMotion = {
 };
 
 function getInitialFen(mode: GameMode, chess960Index: number): string {
-  return mode === "690" ? chess960Fen(chess960Index) : new Chess().fen();
+  return (mode === "690" || mode === "690vAI") ? chess960Fen(chess960Index) : new Chess().fen();
 }
 
 function createGame(mode: GameMode, chess960Index: number): Chess {
@@ -88,6 +88,7 @@ function statusText(game: Chess, mode: GameMode, aiThinking: boolean): string {
 
 function modeTitle(mode: GameMode): string {
   if (mode === "1vAI") return "Игрок против C-движка";
+  if (mode === "690vAI") return "Chess960 против Stockfish";
   if (mode === "690") return "Chess960";
   return "Два игрока";
 }
@@ -399,7 +400,7 @@ export default function App() {
     const rebuilt = new Chess(baseFen);
     for (let index = 0; index < records.length; index += 1) {
       const record = records[index];
-      if (mode === "690" && record.chess960Castle) {
+      if ((mode === "690" || mode === "690vAI") && record.chess960Castle) {
         applyChess960Castle(rebuilt, activeChess960Setup, records.slice(0, index), record.chess960Castle);
       } else {
         applyUciMove(rebuilt, record.uci);
@@ -435,7 +436,7 @@ export default function App() {
       return commitRecord(nextGame, { san: move.san, uci: uciFromMove(move), color: move.color }, baseMoves);
     };
   const evaluatePositionLine = async (currentFen: string, plies = AI_PREVIEW_PLIES) => {
-    if (mode !== "1vAI" || plies < 1) {
+    if ((mode !== "1vAI" && mode !== "690vAI") || plies < 1) {
       setPredictionLine([]);
       return;
     }
@@ -444,9 +445,11 @@ export default function App() {
     try {
       const previewGame = new Chess(currentFen);
       const line: string[] = [];
+      const engine = mode === "690vAI" ? "stockfish" : timerConfig.engine;
+      const isChess960 = mode === "690vAI";
 
       for (let index = 0; index < plies && !previewGame.isGameOver(); index += 1) {
-      const response = await requestBestMove([], previewGame.fen(), 1, timerConfig.engine, false, timerConfig.stockfishSkill);
+      const response = await requestBestMove([], previewGame.fen(), 1, engine, isChess960, timerConfig.stockfishSkill);
         if (response.bestmove === "0000") break;
 
         const move = applyUciMove(previewGame, response.bestmove);
@@ -470,7 +473,9 @@ export default function App() {
       if (timerConfig.aiDelayMs > 0) {
         await sleep(timerConfig.aiDelayMs);
       }
-      const response = await requestBestMove([], currentFen, 1, timerConfig.engine, false, timerConfig.stockfishSkill);
+      const engine = mode === "690vAI" ? "stockfish" : timerConfig.engine;
+      const isChess960 = mode === "690vAI";
+      const response = await requestBestMove([], currentFen, 1, engine, isChess960, timerConfig.stockfishSkill);
 
       if (response.bestmove === "0000") {
         const snapshot = new Chess(currentFen);
@@ -499,12 +504,12 @@ export default function App() {
 
     const onDrop = (sourceSquare: Square, targetSquare: Square) => {
     // Блокируем ход, если комп думает, игра окончена или сейчас ход чёрного AI
-    if (aiThinking || timeWinner || !hasAnyLegalMove(game, mode, activeChess960Setup, moves) || (mode === "1vAI" && game.turn() === "b")) return false;
+    if (aiThinking || timeWinner || !hasAnyLegalMove(game, mode, activeChess960Setup, moves) || ((mode === "1vAI" || mode === "690vAI") && game.turn() === "b")) return false;
 
     const kingCastle = castleMeta(activeChess960Setup, game.turn() as "w" | "b", "king");
     const queenCastle = castleMeta(activeChess960Setup, game.turn() as "w" | "b", "queen");
     const castleSide =
-      mode === "690" && sourceSquare === kingCastle.kingFrom
+      (mode === "690" || mode === "690vAI") && sourceSquare === kingCastle.kingFrom
         ? targetSquare === kingCastle.kingTo || targetSquare === kingCastle.rookFrom
           ? "king"
           : targetSquare === queenCastle.kingTo || targetSquare === queenCastle.rookFrom
@@ -533,7 +538,7 @@ export default function App() {
     const updatedMoves = commitMove(next, move);
 
     // А вот эта часть отвечает за то, должен ли движок делать ответный ход на доске
-    if (mode === "1vAI") {
+    if (mode === "1vAI" || mode === "690vAI") {
       if (next.isGameOver()) {
         setBestMove("партия завершена");
         setPredictionLine([]);
@@ -546,7 +551,7 @@ export default function App() {
   };
 
   const onSquareClick = (square: Square) => {
-    if (aiThinking || timeWinner || !hasAnyLegalMove(game, mode, activeChess960Setup, moves) || (mode === "1vAI" && game.turn() === "b")) return;
+    if (aiThinking || timeWinner || !hasAnyLegalMove(game, mode, activeChess960Setup, moves) || ((mode === "1vAI" || mode === "690vAI") && game.turn() === "b")) return;
     if (selected && onDrop(selected, square)) return;
 
     const piece = game.get(square);
@@ -610,7 +615,7 @@ export default function App() {
   const openTimerSetup = (nextMode: GameMode) => {
     setTimerConfig((current) => ({
       ...current,
-      engine: nextMode === "690" ? "stockfish" : current.engine
+      engine: nextMode === "690vAI" ? "stockfish" : current.engine
     }));
     setPendingMode(nextMode);
   };
@@ -640,7 +645,7 @@ export default function App() {
   };
 
   const updateEngineChoice = (engine: EngineChoice) => {
-    if (pendingMode === "690" && engine !== "stockfish") return;
+    if (pendingMode === "690vAI" && engine !== "stockfish") return;
     setTimerConfig({ ...timerConfig, engine });
   };
 
@@ -660,7 +665,7 @@ export default function App() {
 
   const undoMove = () => {
     if (aiThinking || moves.length === 0) return;
-    const rollbackCount = mode === "1vAI" && moves.length >= 2 && game.turn() === "w" ? 2 : 1;
+    const rollbackCount = (mode === "1vAI" || mode === "690vAI") && moves.length >= 2 && game.turn() === "w" ? 2 : 1;
     const nextMoves = moves.slice(0, Math.max(0, moves.length - rollbackCount));
     const next = rebuildGame(nextMoves);
     setGame(next);
@@ -756,6 +761,10 @@ export default function App() {
                 <Button size="lg" variant="secondary" className="h-12 justify-start" onClick={() => openTimerSetup("690")}>
                   <Crown className="h-4 w-4" />
                   Chess960 #{settings.chess960Index}
+                </Button>
+                <Button size="lg" variant="secondary" className="h-12 justify-start" onClick={() => openTimerSetup("690vAI")}>
+                  <BrainCircuit className="h-4 w-4" />
+                  Chess960 vs Stockfish #{settings.chess960Index}
                 </Button>
                 <Button size="lg" variant="outline" className="h-12 justify-start" onClick={() => openSettings("menu")}>
                   <Settings className="h-4 w-4" />
@@ -1120,7 +1129,7 @@ export default function App() {
                   onChange={(event) => updateCustomMinutes(event.target.value)}
                 />
               )}
-              {(pendingMode === "1vAI" || pendingMode === "690") && (
+              {pendingMode === "1vAI" && (
                 <div className="space-y-2">
                   <p className="text-sm font-medium">Движок</p>
                   <div className="grid gap-2 sm:grid-cols-2">
@@ -1147,9 +1156,13 @@ export default function App() {
                   </div>
                 </div>
               )}
-              {timerConfig.engine === "stockfish" && (pendingMode === "1vAI" || pendingMode === "690") && (
+              {((pendingMode === "1vAI" && timerConfig.engine === "stockfish") ||
+                pendingMode === "690vAI") && (
                 <div className="space-y-2">
-                  <label className="text-sm font-medium" htmlFor="stockfish-skill">Сложность Stockfish</label>
+                  <label className="text-sm font-medium" htmlFor="stockfish-skill">
+                    Stockfish difficulty
+                  </label>
+
                   <div className="grid grid-cols-[1fr_52px] items-center gap-3">
                     <input
                       id="stockfish-skill"
@@ -1160,6 +1173,7 @@ export default function App() {
                       value={timerConfig.stockfishSkill}
                       onChange={(event) => updateStockfishSkill(event.target.value)}
                     />
+
                     <div className="rounded-md border bg-muted/25 px-2 py-2 text-center font-mono text-sm">
                       {timerConfig.stockfishSkill}
                     </div>

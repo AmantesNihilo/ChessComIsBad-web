@@ -1,4 +1,4 @@
-export type GameMode = "1v1" | "1vAI" | "690";
+export type GameMode = "1v1" | "1vAI" | "690" | "690vAI";
 
 export type TimerPreset = "none" | "3" | "5" | "10" | "15" | "custom";
 
