@@ -2,6 +2,8 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
+ENV PYTHONPATH=/app
+
 RUN apt-get update && apt-get install -y build-essential make \
     && rm -rf /var/lib/apt/lists/*
 
@@ -14,4 +16,7 @@ COPY assets assets
 
 RUN make -C engine clean && make -C engine LDLIBS=
 
-CMD ["python", "-m", "uvicorn", "backend.app.main:app", "--host", "127.0.0.1", "--port", "8000"]
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "from backend.app.main import app; print(app.title)" || exit 1
+
+CMD ["python", "-m", "uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
