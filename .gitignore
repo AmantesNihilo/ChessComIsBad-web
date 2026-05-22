@@ -1,0 +1,13 @@
+.logs/
+backend/venv/
+backend/**/__pycache__/
+backend/**/*.pyc
+backend/*.log
+frontend/node_modules/
+frontend/dist/
+frontend/*.tsbuildinfo
+frontend/*.log
+engine/bin/
+engine/obj/
+tools/stockfish/
+*.exe

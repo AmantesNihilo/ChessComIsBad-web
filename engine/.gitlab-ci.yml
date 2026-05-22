@@ -1,0 +1,23 @@
+stages:
+  - format
+  - build
+  - test
+
+format:
+  stage: format
+  image: gcc:latest
+  script:
+    - apt-get update && apt-get install -y clang-format
+    - make format-check
+
+build:
+  stage: build
+  image: gcc:latest
+  script:
+    - make LDLIBS=
+
+test:
+  stage: test
+  image: gcc:latest
+  script:
+    - make test LDLIBS=

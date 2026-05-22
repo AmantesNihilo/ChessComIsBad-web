@@ -1,0 +1,8 @@
+*.out
+*.a
+*.log
+*.o
+.vscode/
+bin/
+obj/
+chessviz*

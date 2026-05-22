@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 18% 8%;
+    --foreground: 210 20% 96%;
+    --card: 222 17% 12%;
+    --card-foreground: 210 20% 96%;
+    --popover: 222 17% 12%;
+    --popover-foreground: 210 20% 96%;
+    --primary: 160 84% 39%;
+    --primary-foreground: 160 100% 8%;
+    --secondary: 218 16% 18%;
+    --secondary-foreground: 210 20% 96%;
+    --muted: 218 16% 18%;
+    --muted-foreground: 215 13% 66%;
+    --accent: 218 16% 20%;
+    --accent-foreground: 210 20% 96%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 20% 96%;
+    --border: 217 16% 23%;
+    --input: 217 16% 23%;
+    --ring: 160 84% 39%;
+    --radius: 0.5rem;
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: Inter, "Segoe UI", system-ui, sans-serif;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  #root {
+    min-height: 100vh;
+  }
+
+  button,
+  select,
+  input {
+    font: inherit;
+  }
+}
+
+@layer utilities {
+  .board-shell {
+    background:
+      linear-gradient(135deg, rgba(20, 184, 166, 0.12), rgba(245, 158, 11, 0.07)),
+      hsl(var(--card));
+  }
+
+  .page-shell {
+    width: min(100% - 32px, 1280px);
+    margin-inline: auto;
+  }
+
+  .subtle-grid {
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+    background-size: 42px 42px;
+  }
+}
