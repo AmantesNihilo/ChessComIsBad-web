@@ -7,13 +7,10 @@ ENV PYTHONPATH=/app
 RUN apt-get update && apt-get install -y \
     build-essential \
     make \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
-# Download and setup Stockfish
-RUN mkdir -p tools/stockfish && \
-    curl -L https://github.com/official-stockfish/Stockfish/releases/download/sf17/stockfish-ubuntu-x86_64-avx2 -o tools/stockfish/stockfish && \
-    chmod +x tools/stockfish/stockfish
+    stockfish \
+    && rm -rf /var/lib/apt/lists/* && \
+    mkdir -p tools/stockfish && \
+    ln -s /usr/games/stockfish tools/stockfish/stockfish || cp /usr/games/stockfish tools/stockfish/stockfish
 
 COPY backend/requirements.txt backend/requirements.txt
 RUN pip install --no-cache-dir -r backend/requirements.txt
