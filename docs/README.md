@@ -106,14 +106,12 @@ tools/stockfish/stockfish.exe
 ChessComIsBad-web/
 ├── assets/
 ├── backend/
+├── docs/
 ├── engine/
 ├── frontend/
 ├── docker-compose.yml
 ├── Dockerfile.backend
-├── Dockerfile.frontend
-├── start-dev.bat
-├── start-dev.ps1
-└── LICENSE
+└── Dockerfile.frontend
 ```
 
 ## Лицензия
