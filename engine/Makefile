@@ -37,11 +37,11 @@ LIB_SRCS = \
 	$(SRC_DIR)/parse_logic.c \
 	$(SRC_DIR)/game_state.c
 
-TEST_SRCS = $(TEST_DIR)/unit_tests.c $(LIB_SRCS)
+TEST_SRCS = $(TEST_DIR)/unit_tests.c $(TEST_DIR)/unit_tests_custom.c $(LIB_SRCS)
 
 APP_OBJS  = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/src/%.o,$(APP_SRCS))
 TEST_OBJS = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/src/%.o,$(LIB_SRCS)) \
-            $(patsubst $(TEST_DIR)/%.c,$(OBJ_DIR)/test/%.o,$(TEST_DIR)/unit_tests.c)
+            $(patsubst $(TEST_DIR)/%.c,$(OBJ_DIR)/test/%.o,$(filter $(TEST_DIR)/%.c,$(TEST_SRCS)))
 
 DEPS = \
 	$(SRC_DIR)/chess_table.h \

@@ -71,6 +71,7 @@ static Piece board_get(uint64_t *board, uint8_t col, uint8_t row) {
 static Move move_make(Piece piece, MoveType type, uint8_t src_col, uint8_t src_row,
                       uint8_t dst_col, uint8_t dst_row) {
     Move move;
+    memset(&move, 0, sizeof(move));
     move.src[0] = src_col;
     move.src[1] = src_row;
     move.dst[0] = dst_col;
@@ -862,6 +863,8 @@ static int test_king_short_castle_is_valid(void) {
     board_clear(board);
     board_set(board, 4, 0, KING | WHITE);
     board_set(board, 7, 0, ROOK | WHITE);
+    board_set(board, 7, 7, KING | BLACK);
+    memset(&move, 0, sizeof(move));
     move.type = MOVE_SHORT_CASTLE;
     ASSERT_TRUE(prepare_castle_move(&move, WHITE, board), "short castling must be valid");
     ASSERT_EQ_INT(execute_parsed_move(move, board), 0, "short castling must execute");
@@ -877,6 +880,8 @@ static int test_king_long_castle_is_valid(void) {
     board_clear(board);
     board_set(board, 4, 0, KING | WHITE);
     board_set(board, 0, 0, ROOK | WHITE);
+    board_set(board, 7, 7, KING | BLACK);
+    memset(&move, 0, sizeof(move));
     move.type = MOVE_LONG_CASTLE;
     ASSERT_TRUE(prepare_castle_move(&move, WHITE, board), "long castling must be valid");
     ASSERT_EQ_INT(execute_parsed_move(move, board), 0, "long castling must execute");
@@ -1145,7 +1150,7 @@ static int test_parse_impossible_move_execution_is_invalid(void) {
     return TEST_PASS;
 }
 
-int main(void) {
+int unit_tests_custom_main(void) {
     if (init_test_regex() != 0) {
         printf("Cannot init regex\n");
         return 2;

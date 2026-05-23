@@ -9,6 +9,7 @@
 #include "parse_logic.h"
 
 extern regex_t regex;
+int unit_tests_custom_main(void);
 
 static int init_test_regex(void) {
     const char *pat =
@@ -29,6 +30,27 @@ static void game_clear_with_kings(GameState *game) {
     game_clear(game);
     board_set(game->board, 0, 0, KING | WHITE);
     board_set(game->board, 7, 7, KING | BLACK);
+}
+
+static int count_back_rank_piece(uint64_t *board, uint8_t row, Piece piece) {
+    int count = 0;
+
+    for (uint8_t col = 0; col < 8; col++) {
+        if ((board_get(board, col, row) & 0x3F) == piece) count++;
+    }
+    return count;
+}
+
+static int find_back_rank_piece(uint64_t *board, uint8_t row, Piece piece, int occurrence) {
+    int seen = 0;
+
+    for (uint8_t col = 0; col < 8; col++) {
+        if ((board_get(board, col, row) & 0x3F) == piece) {
+            if (seen == occurrence) return col;
+            seen++;
+        }
+    }
+    return -1;
 }
 
 /* Parser reads a normal pawn move. */
@@ -69,6 +91,64 @@ CTEST(parser, bad_square) {
     Move move = parse_string_to_move("e9-e4");
 
     ASSERT_EQUAL(MOVE_ERROR, move.type);
+}
+
+/* Allocated board starts from the regular chess position. */
+CTEST(board, create_and_free) {
+    uint64_t *board = create_chess_table();
+
+    ASSERT_TRUE(board != NULL);
+    ASSERT_EQUAL((ROOK | WHITE), board_get(board, 0, 0));
+    ASSERT_EQUAL((KING | WHITE), board_get(board, 4, 0));
+    ASSERT_EQUAL((PAWN | BLACK), board_get(board, 4, 6));
+
+    free_chess_table(board);
+}
+
+/* Chess960 initialization keeps the required back-rank invariants. */
+CTEST(board, fisher_setup) {
+    uint64_t board[8];
+    int left_bishop;
+    int right_bishop;
+    int king;
+    int left_rook;
+    int right_rook;
+
+    init_fisher(board, -1);
+
+    for (uint8_t col = 0; col < 8; col++) {
+        ASSERT_EQUAL((PAWN | WHITE), board_get(board, col, 1));
+        ASSERT_EQUAL((PAWN | BLACK), board_get(board, col, 6));
+        ASSERT_EQUAL((board_get(board, col, 0) & 0x3F), (board_get(board, col, 7) & 0x3F));
+    }
+
+    ASSERT_EQUAL(2, count_back_rank_piece(board, 0, BISHOP));
+    ASSERT_EQUAL(2, count_back_rank_piece(board, 0, KNIGHT));
+    ASSERT_EQUAL(2, count_back_rank_piece(board, 0, ROOK));
+    ASSERT_EQUAL(1, count_back_rank_piece(board, 0, QUEEN));
+    ASSERT_EQUAL(1, count_back_rank_piece(board, 0, KING));
+
+    left_bishop = find_back_rank_piece(board, 0, BISHOP, 0);
+    right_bishop = find_back_rank_piece(board, 0, BISHOP, 1);
+    ASSERT_TRUE((left_bishop % 2) != (right_bishop % 2));
+
+    king = find_back_rank_piece(board, 0, KING, 0);
+    left_rook = find_back_rank_piece(board, 0, ROOK, 0);
+    right_rook = find_back_rank_piece(board, 0, ROOK, 1);
+    ASSERT_TRUE(left_rook < king && king < right_rook);
+}
+
+/* Game-level Chess960 init resets state flags and delegates board setup. */
+CTEST(board, game_fisher_setup) {
+    GameState game;
+
+    game_init_fisher(&game, 959);
+
+    ASSERT_EQUAL(WHITE, game.current_color);
+    ASSERT_EQUAL(0, game.en_passant_available);
+    ASSERT_EQUAL(0, game.game_over);
+    ASSERT_EQUAL(1, count_back_rank_piece(game.board, 0, KING));
+    ASSERT_EQUAL(1, count_back_rank_piece(game.board, 7, KING));
 }
 
 /* Capture notation must really capture an enemy piece. */
@@ -178,6 +258,9 @@ int main(void) {
     failed += RUN_CTEST(parser, knight_move);
     failed += RUN_CTEST(parser, castle_moves);
     failed += RUN_CTEST(parser, bad_square);
+    failed += RUN_CTEST(board, create_and_free);
+    failed += RUN_CTEST(board, fisher_setup);
+    failed += RUN_CTEST(board, game_fisher_setup);
     failed += RUN_CTEST(rules, capture_marker_requires_piece);
     failed += RUN_CTEST(rules, quiet_marker_cannot_capture);
     failed += RUN_CTEST(rules, pawn_promotion);
@@ -190,5 +273,8 @@ int main(void) {
     failed += RUN_CTEST(project, custom_tests_saved);
 
     regfree(&regex);
-    return failed ? failed : ctest_result();
+
+    failed += unit_tests_custom_main();
+    failed += ctest_result();
+    return failed ? 1 : 0;
 }
