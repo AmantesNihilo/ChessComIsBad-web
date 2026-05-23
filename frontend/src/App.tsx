@@ -1129,7 +1129,7 @@ export default function App() {
                   onChange={(event) => updateCustomMinutes(event.target.value)}
                 />
               )}
-              {pendingMode === "1vAI" && (
+              {(pendingMode === "1vAI" || pendingMode === "690vAI") && (
                 <div className="space-y-2">
                   <p className="text-sm font-medium">Движок</p>
                   <div className="grid gap-2 sm:grid-cols-2">
@@ -1137,11 +1137,11 @@ export default function App() {
                       type="button"
                       variant={timerConfig.engine === "alpha-beta" ? "default" : "outline"}
                       className="h-auto min-h-12 flex-col items-start gap-1 whitespace-normal px-3 py-2"
-                      disabled={pendingMode === "690"}
+                      disabled={pendingMode === "690vAI"}
                       onClick={() => updateEngineChoice("alpha-beta")}
                     >
                       <span>Наш альфа-бета</span>
-                      {pendingMode === "690" && <span className="text-xs opacity-70">Недоступно для Фишера</span>}
+                      {pendingMode === "690vAI" && <span className="text-xs opacity-70">Недоступно для Фишера</span>}
                     </Button>
                     <Button
                       type="button"
