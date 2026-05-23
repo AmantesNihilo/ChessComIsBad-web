@@ -349,7 +349,7 @@ export default function App() {
       setIsEvalLoading(false);
     }
   };
-    
+
   useEffect(() => {
     localStorage.setItem("trpo-chess-settings", JSON.stringify(settings));
   }, [settings]);
@@ -718,7 +718,7 @@ export default function App() {
   const passiveBestMove = bestMove === "-" || bestMove.startsWith("нет") || bestMove.startsWith("партия");
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-background text-foreground subtle-grid">
+    <main className={cn("min-h-screen overflow-x-hidden bg-background text-foreground", screen === "menu" ? "animated-grid" : "subtle-grid")}>
       <AnimatePresence mode="wait">
         {screen === "menu" && (
           <motion.section key="menu" {...screenMotion} className="page-shell grid min-h-screen items-center gap-8 py-8 lg:grid-cols-[1fr_360px]">
@@ -728,7 +728,7 @@ export default function App() {
                 TRPO Chess
               </Badge>
               <h1 className="mt-5 max-w-4xl text-5xl font-black leading-[1.04] tracking-tight md:text-7xl">
-                TRPO Chess (C, React, Python)
+                ChessComIsBad
               </h1>
               <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground md:text-lg">
                 Шахматное приложение с React-интерфейсом, FastAPI backend и C-движком через UCI.
@@ -965,14 +965,14 @@ export default function App() {
                     <p className="text-xs font-medium opacity-70">Белые</p>
                     <p className="mt-1 flex items-center gap-2 text-lg font-semibold">
                       {currentTurn === "w" && <span className="h-2 w-2 rounded-full bg-emerald-400" />}
-                      {clockEnabled ? formatClock(timeLeft.w) : "ходят"}
+                      {clockEnabled ? formatClock(timeLeft.w) : currentTurn === "w" ? "ходит" : "ждет.."}
                     </p>
                   </div>
                   <div className={cn("rounded-md border p-3 transition-colors", currentTurn === "b" ? "border-slate-700 bg-slate-950 text-slate-100" : "bg-muted/20")}>
                     <p className="text-xs font-medium opacity-70">Черные</p>
                     <p className="mt-1 flex items-center gap-2 text-lg font-semibold">
                       {currentTurn === "b" && <span className="h-2 w-2 rounded-full bg-emerald-400" />}
-                      {clockEnabled ? formatClock(timeLeft.b) : "ходят"}
+                      {clockEnabled ? formatClock(timeLeft.b) : currentTurn === "b" ? "ходит" : "ждет.."}
                     </p>
                   </div>
                 </div>

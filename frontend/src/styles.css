@@ -72,4 +72,72 @@
       linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
     background-size: 42px 42px;
   }
+
+  .animated-grid {
+    position: relative;
+    isolation: isolate;
+    background-image:
+      linear-gradient(rgba(52, 211, 153, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(52, 211, 153, 0.06) 1px, transparent 1px),
+      linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    background-position:
+      0 0,
+      0 0,
+      21px 21px,
+      21px 21px;
+    background-size:
+      42px 42px,
+      42px 42px,
+      84px 84px,
+      84px 84px;
+    animation: grid-drift 18s linear infinite;
+  }
+
+  .animated-grid::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      linear-gradient(90deg, transparent 0 46%, rgba(52, 211, 153, 0.08) 50%, transparent 54%),
+      linear-gradient(0deg, transparent 0 46%, rgba(245, 158, 11, 0.06) 50%, transparent 54%);
+    background-size: 336px 336px;
+    opacity: 0.55;
+    animation: grid-scan 9s ease-in-out infinite alternate;
+  }
+
+  @keyframes grid-drift {
+    from {
+      background-position:
+        0 0,
+        0 0,
+        21px 21px,
+        21px 21px;
+    }
+    to {
+      background-position:
+        42px 42px,
+        42px 42px,
+        105px 105px,
+        105px 105px;
+    }
+  }
+
+  @keyframes grid-scan {
+    from {
+      background-position: -168px 0, 0 -168px;
+    }
+    to {
+      background-position: 168px 0, 0 168px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animated-grid,
+    .animated-grid::before {
+      animation: none;
+    }
+  }
 }
